@@ -1,8 +1,37 @@
 // importing react library to use react logic such as jsx and useState
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 // function that will contain everything needed to let the todo list run
 export const UserInput = () => {
+	const getAllTodos = () => {
+		fetch("https://assets.breatheco.de/apis/fake/todos/user/alexAyala")
+			.then((response) => response.json())
+			.then((data) => setVariable(data));
+	};
+
+	useEffect(() => {
+		getAllTodos();
+	}, []);
+
+	const userURL =
+			"https://assets.breatheco.de/apis/fake/todos/user/alexAyala";
+
+		fetch(userURL)
+			.then((response) => {
+				if (!response.ok) {
+					throw new Error(
+						`${response.status} - ${response.statusText}`
+					);
+				}
+				return response.json();
+			})
+			.then((data) => setVariable(data))
+			.catch((err) => console.error(err));
+	};
+
+	useEffect(() => {
+		getAllTodos();
+	}, []);
 	// state that will contain the first input where you initially enter a todo item
 	// before pressing enter
 	// listItem starting value (empty string)

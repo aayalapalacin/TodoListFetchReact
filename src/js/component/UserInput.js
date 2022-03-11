@@ -8,7 +8,10 @@ export const UserInput = () => {
 	// listItem starting value (empty string)
 	// setListItem allows the input value to be passed to new array and clear the
 	// first input after pressing enter
-	const [listItem, setListItem] = useState("");
+	const [listItem, setListItem] = useState({
+		label: "",
+		done: false,
+	});
 	// todoList is an empty array created to put a new todo item's string inside
 	// setTodoList will be used to update the empty array to the new string value AND
 	//  clear the array when x div is clicked
@@ -27,28 +30,32 @@ export const UserInput = () => {
 				}
 				return response.json();
 			})
-			.then((data) => setTodoList(data))
+			.then((data) => {
+				console.log(data);
+				setTodoList(data);
+			})
 			.catch((err) => console.error(err));
 	};
 
 	const remove = (index) => {
-		const removeItem = todoList.filter((item, i) => i != index);
+		let removeItem = todoList.filter((item, i) => i != index);
 		setTodoList(removeItem);
-		console.log("todo list test", todoList);
-		console.log("remove item", removeItem);
+		// if(removeItem.length) fetch(userURL),
+		updateAPI(removeItem);
+	};
 
+	function updateAPI(newList) {
 		fetch(userURL, {
 			method: "PUT",
-			body: removeItem,
-		})
-			.then((response) => response.json())
-			.then((result) => {
-				console.log("Success:", result);
-			})
-			.catch((error) => {
-				console.error("Error:", error);
-			});
-	};
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify(newList),
+		}).then((resp) => {
+			console.log(resp.ok); // will be true if the response is successfull
+			console.log(resp.status); // the status code = 200 or code = 400 etc.
+			console.log(resp.text()); // will try return the exact result as string
+			return resp.json(); // (returns promise) will try to parse the result as json as return a promise that you can .then for results
+		});
+	}
 
 	// this is a function to spark an event when enter is pressed
 	const handleKeyPress = (event) => {
@@ -61,8 +68,12 @@ export const UserInput = () => {
 			// give us: ["initial string"] just the array with string inside.
 			setTodoList(newTodoList);
 			// next the todoList is reset as this array. the value of the initial input is
-			setListItem("");
+			setListItem({
+				label: "",
+				done: false,
+			});
 			// set to empty string to clear initial input
+			updateAPI(newTodoList);
 		}
 	};
 
@@ -85,7 +96,12 @@ export const UserInput = () => {
 			<li className="list-group-item item" key={index}>
 				{item.label}
 
-				<div className="mouseOver" onClick={() => remove(index)}>
+				<div
+					className="mouseOver"
+					onClick={() => {
+						remove(index);
+						// updateAPI();
+					}}>
 					x
 				</div>
 			</li>
@@ -99,8 +115,10 @@ export const UserInput = () => {
 					type="text"
 					className="item userInput"
 					onKeyDown={handleKeyPress}
-					value={listItem}
-					onChange={(e) => setListItem(e.target.value)}
+					value={listItem.label}
+					onChange={(e) =>
+						setListItem({ ...listItem, label: e.target.value })
+					}
 					placeholder="What needs to be done?"
 				/>
 			</div>
